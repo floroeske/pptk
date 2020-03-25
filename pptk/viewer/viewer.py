@@ -5,6 +5,7 @@ import numpy
 import os
 import inspect
 import warnings
+import time
 
 _viewer_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
 if ~os.path.isabs(_viewer_dir):
@@ -341,7 +342,7 @@ class viewer:
         self.__send(msg)
 
     def record(self, folder, poses, ts=[], tlim=[-numpy.inf, numpy.inf],
-               interp='cubic_natural', shutter_speed=numpy.inf, fps=24,
+               interp='cubic_natural', shutter_speed=None, fps=24,
                prefix='frame_', ext='png'):
         """
 
@@ -354,6 +355,7 @@ class viewer:
             ts: Same as in :meth:`pptk.viewer.play`
             tlim: Same as in :meth:`pptk.viewer.play`
             interp: Same as in :meth:`pptk.viewer.play`
+            shutter_speed (optional): Time before capturing
             fps: Frames per second
             prefix: Resulting image file names are prefixed with this string
             ext: Image format
@@ -398,6 +400,9 @@ class viewer:
                 struct.pack('2f', t, t) + \
                 struct.pack('?', False)
             self.__send(msg)
+            # give viewer time to finish rendering
+            if shutter_speed is not None:
+                time.sleep(shutter_speed)
             filename = prefix \
                 + ('%0' + str(num_digits) + 'd') % (i + 1) + '.' + ext
             filename = os.path.join(folder, filename)
